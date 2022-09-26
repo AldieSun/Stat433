@@ -1,0 +1,59 @@
+---
+title: "Stat433_hw3"
+author: "Haoxuan Sun"
+date: "2022/9/25"
+output: github_document
+---
+
+```{r}
+library(nycflights13)
+library(tidyverse)
+
+flight = flights
+```
+```{r}
+#1.
+flight_missing_dep = flights %>% filter(is.na(dep_time)) %>% 
+  summarise(n = nrow(.))
+flight_missing_dep
+```
+```{r}
+flight_missing_dep_map = flights %>% filter(is.na(dep_time))
+flight_missing_dep_map
+# the dep_delay, arr_time, arr_delay are all missing, 
+# indicating the flight might be canceled
+```
+
+```{r}
+#2.
+flight_time_mutated = flight %>% 
+  mutate(dep_time = dep_time %% 100 + dep_time %/% 100 * 60,
+         sched_dep_time = sched_dep_time %% 100 + sched_dep_time %/% 100 * 60)
+
+flight_time_mutated
+```
+
+```{r}
+#3.
+flight_calcelled = flight %>%
+  group_by(year, month, day) %>%
+  summarise(canceled = sum(is.na(arr_delay)),
+            total_flights = n(),
+            avg_delay = sum(na.omit(arr_delay)) / total_flights,
+            canceled_prop = (canceled / total_flights) * 100
+            ) %>% 
+    ggplot() + 
+    geom_point(aes(x = avg_delay, 
+    y = canceled_prop)
+    ) + 
+    labs(x = "Average Arrival Delay", 
+        y = "Canceled Flight Proportion") +
+    geom_point(aes(x = total_flights,
+                    y = canceled_prop))
+
+flight_calcelled
+# As average arrival delay increases,
+# the canceled flight proportion also increase.
+# Days with larger tital flights tend to have
+# larger cancel proportion.
+```
